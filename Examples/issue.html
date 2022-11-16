@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="utf-8" />
+	<title>WebGPU compute issue</title>
+</head>
+<body>
+	<div id="info">
+		<h1><a href="https://gpuweb.github.io/gpuweb/" target="_blank" rel="noopener">WebGPU</a> compute issue.</h1>
+		By <a href="https://github.com/anhr" target="_blank" rel="noopener">anhr</a>.
+		<a href="https://github.com/anhr/commonNodeJS/tree/master/WebGPU" target="_blank" rel="noopener">github</a>.
+	</div>
+	Instructions: Check out DevTools JavaScript console.
+	<script>
+
+		async function initializeWebGPU() {
+			// Check to ensure the user agent supports WebGPU.
+			if (!('gpu' in navigator)) {
+				console.error("WebGPU: User agent doesn't support WebGPU. WebGPU is available for now in Chrome Canary https://www.google.com/intl/ru/chrome/canary/ on desktop behind an experimental flag. You can enable it at chrome://flags/#enable-unsafe-webgpu. The API is constantly changing and currently unsafe. As GPU sandboxing isn't implemented yet for the WebGPU API, it is possible to read GPU data for other processes! Don't browse the web with it enabled.");
+				return;
+			}
+
+			// Request an adapter.
+			const gpuAdapter = await navigator.gpu.requestAdapter();
+
+			// requestAdapter may resolve with null if no suitable adapters are found.
+			if (!gpuAdapter) {
+				console.error('No WebGPU adapters found.');
+				return false;
+			}
+
+
+			// Request a device.
+			// Note that the promise will reject if invalid options are passed to the optional
+			// dictionary. To avoid the promise rejecting always check any features and limits
+			// against the adapters features and limits prior to calling requestDevice().
+			const gpuDevice = await gpuAdapter.requestDevice();
+
+			// requestDevice will never return null, but if a valid device request can't be
+			// fulfilled for some reason it may resolve to a device which has already been lost.
+			// Additionally, devices can be lost at any time after creation for a variety of reasons
+			// (ie: browser resource management, driver updates), so it's a good idea to always
+			// handle lost devices gracefully.
+			gpuDevice.lost.then((info) => {
+				console.error(`WebGPU device was lost: ${info.message}`);
+
+				gpuDevice = null;
+
+				// Many causes for lost devices are transient, so applications should try getting a
+				// new device once a previous one has been lost unless the loss was caused by the
+				// application intentionally destroying the device. Note that any WebGPU resources
+				// created with the previous device (buffers, textures, etc) will need to be
+				// re-created with the new one.
+				if (info.reason != 'destroyed') {
+					initializeWebGPU();
+				}
+			});
+
+			const l = 2,
+				type = Uint32Array;// Float32Array;
+
+			//pattern
+
+			const patternRowlength = 3,
+				patternCount = l * patternRowlength,
+				patternBufferSize = type.BYTES_PER_ELEMENT * patternCount,
+				patternBuffer = gpuDevice.createBuffer({
+
+				size: patternBufferSize,
+				usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
+
+			});
+
+			//Memory leak
+
+			const memoryLeakRowlength = 4,
+				memoryLeakCount = l * memoryLeakRowlength,
+				memoryLeakBufferSize = type.BYTES_PER_ELEMENT * memoryLeakCount,
+				memoryLeakBuffer = gpuDevice.createBuffer({
+
+				size: memoryLeakBufferSize,
+				usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
+
+			});
+
+			//Bind group layout and bind group
+
+			const bindGroupLayout = gpuDevice.createBindGroupLayout({
+				entries: [
+					{
+
+						binding: 0,
+						visibility: GPUShaderStage.COMPUTE,
+						buffer: { type: "storage" }
+
+					},
+					{
+
+						binding: 1,
+						visibility: GPUShaderStage.COMPUTE,
+						buffer: { type: "storage" }
+
+					},
+				]
+			});
+			const bindGroup = gpuDevice.createBindGroup({
+				layout: bindGroupLayout,
+				entries: [
+					{
+						binding: 0,
+						resource: { buffer: patternBuffer }
+					},
+					{
+						binding: 1,
+						resource: { buffer: memoryLeakBuffer }
+					},
+				],
+			});
+
+			// Compute shader code
+
+			const shaderModule = gpuDevice.createShaderModule({
+				code: `
+	struct Pattern {
+	vertice: array<u32, 2>,
+	length: u32,
+	}
+	@group(0) @binding(0) var<storage, read_write> pattern : array<Pattern>;
+
+	struct MemoryLeak {
+	vertice: vec2<u32>,
+	length: u32,
+	}
+	@group(0) @binding(1) var<storage, read_write> memoryLeak : array<MemoryLeak>;
+
+	@compute @workgroup_size(1)
+	fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
+	  let i = global_id.x;//fermatSpiral vertice index
+
+	  //pattern
+	  pattern[i].vertice[0] = 1;
+	  pattern[i].vertice[1] = 2;
+	  pattern[i].length = 3;
+
+	  //memoryLeak
+	  memoryLeak[i].vertice.x = 1;
+	  memoryLeak[i].vertice.y = 2;
+	  memoryLeak[i].length = 3;
+
+	}
+  `
+			});
+
+			// Pipeline setup
+
+			const computePipeline = gpuDevice.createComputePipeline({
+				layout: gpuDevice.createPipelineLayout({
+					bindGroupLayouts: [bindGroupLayout]
+				}),
+				compute: {
+					module: shaderModule,
+					entryPoint: "main"
+				}
+			});
+
+			// Commands submission
+
+			const commandEncoder = gpuDevice.createCommandEncoder();
+
+			const passEncoder = commandEncoder.beginComputePass();
+			passEncoder.setPipeline(computePipeline);
+			passEncoder.setBindGroup(0, bindGroup);//set @group(0) in the shading code
+			const workgroupCountX = l;
+			passEncoder.dispatchWorkgroups(workgroupCountX);
+			passEncoder.end();
+
+			//pattern
+
+			const patternGpuReadBuffer = gpuDevice.createBuffer({
+				size: patternBuffer.size,
+				usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ
+			});
+			commandEncoder.copyBufferToBuffer(
+				patternBuffer, // source buffer
+				0, // source offset
+				patternGpuReadBuffer, // destination buffer
+				0, // destination offset
+				patternBuffer.size // size
+			);
+
+			//memory leak
+
+			const memoryLeakGpuReadBuffer = gpuDevice.createBuffer({
+				size: memoryLeakBuffer.size,
+				usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ
+			});
+			commandEncoder.copyBufferToBuffer(
+				memoryLeakBuffer, // source buffer
+				0, // source offset
+				memoryLeakGpuReadBuffer, // destination buffer
+				0, // destination offset
+				memoryLeakBuffer.size // size
+			);
+
+			gpuDevice.queue.submit([commandEncoder.finish()]);
+
+			//Read the pattern buffer
+			await patternGpuReadBuffer.mapAsync(GPUMapMode.READ);
+			const patternOut = patternGpuReadBuffer.getMappedRange();
+			console.log('pattern:    ' + new type(patternOut) + ' patternOut.byteLength = ' + patternOut.byteLength);
+
+			//Read the memory leak buffer
+			await memoryLeakGpuReadBuffer.mapAsync(GPUMapMode.READ);
+			const memoryLeakOut = memoryLeakGpuReadBuffer.getMappedRange();
+			console.log('memoryLeak: ' + new type(memoryLeakOut) + ' memoryLeakOut.byteLength = ' + memoryLeakOut.byteLength);
+
+		}
+		initializeWebGPU();
+
+	</script>
+</body>
+</html>
