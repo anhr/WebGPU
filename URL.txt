@@ -16,3 +16,24 @@ Tutorial:
 	https://www.youtube.com/watch?v=1Ydti6_-aB4
 
 thanks to https://web.dev/gpu-compute/
+
+------------------------------------------
+Building
+
+Open "Node.js command prompt"
+
+d:
+cd "D:\My documents\MyProjects\webgl\three.js\GitHub\WebGPU\master"
+npm install
+npm install uglify-es //for build/WebGPU.module.min.js
+npm run build
+
+errors:
+
+[!] (babel plugin) Error: Couldn't find preset "env" relative to directory "D:\\My documents\\MyProjects\\webgl\\three.js\\GitHub\\commonNodeJS\\master"
+
+	Собрать D:\My documents\MyProjects\webgl\three.js\GitHub\commonNodeJS\master\build
+	как описано в D:\My documents\MyProjects\webgl\three.js\GitHub\commonNodeJS\master\URL.txt
+
+
+

@@ -281,7 +281,7 @@ class WebGPU {
 			if (settings.results)
 				settings.results.forEach(resultMatrix => {
 
-					resultMatrix.type ||= Float32Array;
+					if (resultMatrix.type === undefined) resultMatrix.type = Float32Array;
 					const bufferSize = resultMatrix.type.BYTES_PER_ELEMENT * resultMatrix.count;
 					if (!bufferSize) {
 
