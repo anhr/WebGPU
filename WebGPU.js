@@ -14,7 +14,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
 */
 
-import loadFile from '../../commonNodeJS/master/loadFileNodeJS/loadFile.js'
+//import loadFile from '../../commonNodeJS/master/loadFileNodeJS/loadFile.js'
 
 class WebGPU {
 
@@ -405,9 +405,29 @@ class WebGPU {
 			// Compute shader code
 
 			const shaderCode = settings.shaderCode;
+			
 			if (shaderCode)
 				onLoad(shaderCode)
-			else loadFile.async(settings.shaderCodeFile, { onload: function (shaderCode, url ) { onLoad(shaderCode) } } );
+			else {
+
+//				loadFile.async(settings.shaderCodeFile, { onload: function (shaderCode, url) { onLoad(shaderCode) } });
+
+				//https://developer.mozilla.org/en-US/docs/Web/API/fetch
+				fetch(settings.shaderCodeFile)
+					.then((response) => {
+						if (!response.ok) {
+							throw new Error(`Load "${response.url}" ${response.statusText}. Status = ${response.status}`);
+						}
+						return response.text();
+					})
+					.then((shaderCode) => {
+						onLoad(shaderCode);
+					})
+					.catch((error) => {
+						console.error(error);
+					});
+
+			}
 			async function onLoad(shaderCode) {
 
 				if (settings.shaderCodeText) shaderCode = settings.shaderCodeText(shaderCode);
