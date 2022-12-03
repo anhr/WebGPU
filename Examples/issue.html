@@ -136,17 +136,19 @@
 
 	@compute @workgroup_size(1)
 	fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
-	  let i = global_id.x;//fermatSpiral vertice index
+		let i = global_id.x;//fermatSpiral vertice index
 
-	  //pattern
-	  pattern[i].vertice[0] = 1;
-	  pattern[i].vertice[1] = 2;
-	  pattern[i].length = 3;
+		//pattern
+		pattern[i].vertice[0] = 1;
+		pattern[i].vertice[1] = 2;
+		pattern[i].length = 3;
 
-	  //memoryLeak
-	  memoryLeak[i].vertice.x = 1;
-	  memoryLeak[i].vertice.y = 2;
-	  memoryLeak[i].length = 3;
+		//memoryLeak
+		memoryLeak[i].vertice.x = 1;
+		memoryLeak[i].vertice.y = 2;
+		memoryLeak[i].length = 3;
+
+		let size = roundUp(8, 12);
 
 	}
   `
