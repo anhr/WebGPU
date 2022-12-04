@@ -654,5 +654,88 @@ WebGPU.out2Matrix = function(out, settings={}) {
 	return matrix;
 
 }
+WebGPU.gui = class {
+
+	/**
+	 * WebGPU gui
+	 * @param {Options} options See <b>options</b> parameter of <a href="../../myThree/jsdoc/module-MyThree-MyThree.html" target="_blank">MyThree</a> class.
+	 * @param {GUI} dat [dat.GUI()]{@link https://github.com/dataarts/dat.gui}.
+	 * @param {GUI} fParent parent folder.
+	 * @example new ND.gui( options, dat, fMesh );
+	 */
+	constructor(options, dat) {
+
+		if ( !options.boOptions ) {
+	
+			console.error( 'WebGPU.gui: call options = new Options( options ) first' );
+			return;
+	
+		}
+		const gui = options.dat.gui;
+		if ( !gui )
+			return;
+		
+		//Localization
+
+		const getLanguageCode = options.getLanguageCode;
+
+		const lang = {
+
+			webGPU: 'WebGPU',
+			webGPUTitle: 'WebGPU settings',
+
+		};
+
+		const _languageCode = getLanguageCode();
+
+		switch (_languageCode) {
+
+			case 'ru'://Russian language
+
+				lang.webGPUTitle = 'Настройки WebGPU';
+
+				break;
+			default://Custom language
+				if ((guiParams.lang === undefined) || (guiParams.lang.languageCode != _languageCode))
+					break;
+
+				Object.keys(guiParams.lang).forEach(function (key) {
+
+					if (lang[key] === undefined)
+						return;
+					lang[key] = guiParams.lang[key];
+
+				});
+
+		}
+		const fParent = gui, fWebGPU = fParent.addFolder(lang.webGPU);
+		dat.folderNameAndTitle(fWebGPU, lang.webGPU, lang.webGPUTitle);
+return;		
+
+		this.object = function (object, dat) {
+
+			var display = 'none';
+			if (object && object.userData.nd) {
+
+				display = 'block';
+				object.userData.nd(fND, dat);
+
+			} else Object.keys(fND.__folders).forEach(key => {
+
+				const folder = fND.__folders[key];
+				if (!folder.userData || (folder.userData.objectItems === undefined)) return;
+				const cSegment = folder.__controllers[0], selectedItem = 0;
+				cSegment.__select.selectedIndex = selectedItem;
+				cSegment.setValue(cSegment.__select[selectedItem].innerHTML);
+
+
+			});
+			fND.domElement.style.display = display;
+
+		}
+
+	}
+
+}
 
 export default WebGPU;
