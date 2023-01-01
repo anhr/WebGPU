@@ -8,6 +8,7 @@
 <body>
 	<div id="info">
 		<h1><a href="https://gpuweb.github.io/gpuweb/" target="_blank" rel="noopener">WebGPU</a> compute issue.</h1>
+		<p>Example for <a href="https://github.com/gpuweb/gpuweb/issues/3610" target="_blank" rel="noopener">GPUBuffer memory leak</a>.</p>
 		By <a href="https://github.com/anhr" target="_blank" rel="noopener">anhr</a>.
 		<a href="https://github.com/anhr/WebGPU" target="_blank" rel="noopener">github</a>.
 	</div>
@@ -67,10 +68,10 @@
 				patternBufferSize = type.BYTES_PER_ELEMENT * patternCount,
 				patternBuffer = gpuDevice.createBuffer({
 
-				size: patternBufferSize,
-				usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
+					size: patternBufferSize,
+					usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
 
-			});
+				});
 
 			//Memory leak
 
@@ -79,10 +80,10 @@
 				memoryLeakBufferSize = type.BYTES_PER_ELEMENT * memoryLeakCount,
 				memoryLeakBuffer = gpuDevice.createBuffer({
 
-				size: memoryLeakBufferSize,
-				usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
+					size: memoryLeakBufferSize,
+					usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
 
-			});
+				});
 
 			//Bind group layout and bind group
 
@@ -122,36 +123,34 @@
 
 			const shaderModule = gpuDevice.createShaderModule({
 				code: `
-	struct Pattern {
-	vertice: array<u32, 2>,
-	length: u32,
-	}
-	@group(0) @binding(0) var<storage, read_write> pattern : array<Pattern>;
+		struct Pattern {
+		vertice: array<u32, 2>,
+		length: u32,
+		}
+		@group(0) @binding(0) var<storage, read_write> pattern : array<Pattern>;
 
-	struct MemoryLeak {
-	vertice: vec2<u32>,
-	length: u32,
-	}
-	@group(0) @binding(1) var<storage, read_write> memoryLeak : array<MemoryLeak>;
+		struct MemoryLeak {
+		vertice: vec2<u32>,
+		length: u32,
+		}
+		@group(0) @binding(1) var<storage, read_write> memoryLeak : array<MemoryLeak>;
 
-	@compute @workgroup_size(1)
-	fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
-		let i = global_id.x;//fermatSpiral vertice index
+		@compute @workgroup_size(1)
+		fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
+			let i = global_id.x;//fermatSpiral vertice index
 
-		//pattern
-		pattern[i].vertice[0] = 1;
-		pattern[i].vertice[1] = 2;
-		pattern[i].length = 3;
+			//pattern
+			pattern[i].vertice[0] = 1;
+			pattern[i].vertice[1] = 2;
+			pattern[i].length = 3;
 
-		//memoryLeak
-		memoryLeak[i].vertice.x = 1;
-		memoryLeak[i].vertice.y = 2;
-		memoryLeak[i].length = 3;
+			//memoryLeak
+			memoryLeak[i].vertice.x = 1;
+			memoryLeak[i].vertice.y = 2;
+			memoryLeak[i].length = 3;
 
-		let size = roundUp(8, 12);
-
-	}
-  `
+		}
+	  `
 			});
 
 			// Pipeline setup
