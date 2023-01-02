@@ -323,6 +323,52 @@ WebGPU.out2Matrix = function (out, settings = {}) {
 	iteration(1, matrix);
 	return matrix;
 };
+WebGPU.gui = class {
+	constructor(options, dat) {
+		if (!options.boOptions) {
+			console.error('WebGPU.gui: call options = new Options( options ) first');
+			return;
+		}
+		const gui = options.dat.gui;
+		if (!gui) return;
+		const getLanguageCode = options.getLanguageCode;
+		const lang = {
+			webGPU: 'WebGPU',
+			webGPUTitle: 'WebGPU settings'
+		};
+		const _languageCode = getLanguageCode();
+		switch (_languageCode) {
+			case 'ru':
+				lang.webGPUTitle = 'Настройки WebGPU';
+				break;
+			default:
+				if (guiParams.lang === undefined || guiParams.lang.languageCode != _languageCode) break;
+				Object.keys(guiParams.lang).forEach(function (key) {
+					if (lang[key] === undefined) return;
+					lang[key] = guiParams.lang[key];
+				});
+		}
+		const fParent = gui,
+		      fWebGPU = fParent.addFolder(lang.webGPU);
+		dat.folderNameAndTitle(fWebGPU, lang.webGPU, lang.webGPUTitle);
+		return;
+		this.object = function (object, dat) {
+			var display = 'none';
+			if (object && object.userData.nd) {
+				display = 'block';
+				object.userData.nd(fND, dat);
+			} else Object.keys(fND.__folders).forEach(key => {
+				const folder = fND.__folders[key];
+				if (!folder.userData || folder.userData.objectItems === undefined) return;
+				const cSegment = folder.__controllers[0],
+				      selectedItem = 0;
+				cSegment.__select.selectedIndex = selectedItem;
+				cSegment.setValue(cSegment.__select[selectedItem].innerHTML);
+			});
+			fND.domElement.style.display = display;
+		};
+	}
+};
 
 exports['default'] = WebGPU;
 
