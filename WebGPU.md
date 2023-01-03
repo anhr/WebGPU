@@ -55,6 +55,22 @@ import WebGPU from './WebGPU/master/WebGPU.js';
 //import WebGPU from './WebGPU/master/build/WebGPU.module.min.js';
 ```
 
+Also you can refer to <b>WebGPU</b> from external JavaScript file. Please include following string into head tag of your web page:
+```
+<script src="https://raw.githack.com/anhr/WebGPU/master/build/WebGPU.js"></script>
+<!--
+<script src="https://raw.githack.com/anhr/WebGPU/master/build/WebGPU.min.js"></script>
+<script src="./WebGPU/master/build/WebGPU.js"></script>
+<script src="./WebGPU/master/build/WebGPU.min.js"></script>
+-->
+```
+
+and add
+```
+if (WebGPU.default) WebGPU = WebGPU.default;
+```
+line into your javascript code.
+
 Now you can use <b>WebGPU</b> in your javascript code.
 
 To illustrate the use of compute shaders in WebGPU, we'll play with matrix multiplication, a common algorithm in machine learning illustrated below.
@@ -142,8 +158,10 @@ new WebGPU({
 				3,
 			out: out => {
 
+				console.log('out:');
 				console.log(new Float32Array(out));
 				const matrix = WebGPU.out2Matrix(out);
+				console.log('matrix:');
 				console.log(matrix);
 
 			}
@@ -222,6 +240,13 @@ The following code is the result of this tutorial.
 
     <meta name="author" content="Andrej Hristoliubov https://github.com/anhr">
 
+    <!--
+    <script src="https://raw.githack.com/anhr/WebGPU/master/build/WebGPU.js"></script>
+    <script src="https://raw.githack.com/anhr/WebGPU/master/build/WebGPU.min.js"></script>
+    <script src="./WebGPU/master/build/WebGPU.js"></script>
+    <script src="./WebGPU/master/build/WebGPU.min.js"></script>
+    -->
+
 </head>
 <body>
     <script nomodule>alert('Fatal error: Your browser do not support modular JavaScript code.');</script>
@@ -239,6 +264,8 @@ The following code is the result of this tutorial.
         //import WebGPU from './WebGPU/master/WebGPU.js';
         //import WebGPU from './WebGPU/master/build/WebGPU.module.js';
         //import WebGPU from './WebGPU/master/build/WebGPU.module.min.js';
+
+        if (WebGPU.default) WebGPU = WebGPU.default;
         
         const firstMatrix = [
                 [1, 2, 3, 4],
@@ -295,8 +322,8 @@ fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
 
             input: { matrices: [firstMatrix, secondMatrix] },
 
-            //shaderCode: shaderCode,
-            shaderCodeFile: 'Shader.c',
+            shaderCode: shaderCode,
+            //shaderCodeFile: 'Shader.c',
 
             results: [
 
