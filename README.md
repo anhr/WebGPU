@@ -1,5 +1,4 @@
 ﻿# WebGPU
-Under construction
 
 [GPU Compute on the web](https://web.dev/gpu-compute/).
 
