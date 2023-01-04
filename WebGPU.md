@@ -6,7 +6,7 @@ GPU Compute on the web. Thanks to [Get started with GPU Compute on the web](http
 * [Quick start.](#Quickstart)
 * [Example of your web page.](#WebPage)
 * [Directory Contents.](#DirectoryContents)
-* [Building your own ND.](#Building)
+* [Building your own WebGPU.](#Building)
 
 <a name="QuickStart"></a>
 ## Quick start
