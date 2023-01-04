@@ -1,6 +1,6 @@
 ﻿# WebGPU
 
-[GPU Compute on the web](https://web.dev/gpu-compute/).
+GPU Compute on the web.
 
 [WebGPU API](https://raw.githack.com/anhr/WebGPU/master/jsdoc/index.html).
 [Example](https://raw.githack.com/anhr/WebGPU/master/Examples/index.html).
