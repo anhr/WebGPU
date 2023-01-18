@@ -656,11 +656,9 @@ WebGPU.out2Matrix = function(out, settings={}) {
 }
 WebGPU.gui = class {
 
-	//* @param { GUI } fParent parent folder.
-
-	/**
+	/* under constraction*
 	 * WebGPU gui
-	 * @param {Options} options See <b>options</b> parameter of <a href="../../myThree/jsdoc/module-MyThree-MyThree.html" target="_blank">MyThree</a> class.
+	 * @param {Options} options See <b>options</b> parameter of <a href="../../../commonNodeJS/master/myThree/jsdoc/module-MyThree-MyThree.html" target="_blank">MyThree</a> class.
 	 * @param {GUI} dat [dat.GUI()]{@link https://github.com/dataarts/dat.gui}.
 	 * @example new WebGPU.gui( options, dat );
 	 */
