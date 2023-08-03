@@ -1,6 +1,10 @@
 # [WebGPU](https://gpuweb.github.io/gpuweb/).
 
-GPU Compute on the web. Thanks to [Get started with GPU Compute on the web](https://web.dev/gpu-compute/).
+GPU Compute on the web.
+
+See [Chrome ships WebGPU](https://developer.chrome.com/blog/webgpu-release/) for details.
+
+Thanks to [Get started with GPU Compute on the web](https://web.dev/gpu-compute/).
 
 # Content
 * [Quick start.](#Quickstart)

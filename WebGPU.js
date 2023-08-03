@@ -1,6 +1,7 @@
 /**
  * @module WebGPU
  * @description [WebGPU]{@link https://gpuweb.github.io/gpuweb/}. GPU Compute on the web.
+ * @see [Chrome ships WebGPU]{@link https://developer.chrome.com/blog/webgpu-release/}
  * @see [Get started with GPU Compute on the web]{@link https://web.dev/gpu-compute/}
  *
  * @author [Andrej Hristoliubov]{@link https://github.com/anhr}
